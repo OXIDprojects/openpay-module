@@ -1,0 +1,27 @@
+{
+    "name": "weetsi/openpay-module",
+    "description": "This is the OpenPay module for the OXID eShop.",
+    "type": "oxideshop-module",
+    "keywords": ["oxid", "modules", "eShop", "OpenPay"],
+    "homepage": "https://www.weetsi.com",
+    "license": [
+        "GPL-3.0",
+        "proprietary"
+    ],
+    "extra": {
+        "oxideshop": {
+            "blacklist-filter": [
+                "documentation/**/*.*"
+            ],
+            "target-directory": "wee/weeopenpay"
+        }
+    },
+    "require": {
+        "php": ">=5.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "OxidEsales\\OpenPayModule\\": "../../../source/modules/wee/weeopenpay"
+        }
+    }
+}
