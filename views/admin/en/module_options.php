@@ -31,16 +31,15 @@ $aLang = array(
     'SHOP_MODULE_sWeeOpenPayProdId'                         => 'Production ID',
     'SHOP_MODULE_sWeeOpenPayProdPrivateKey'                 => 'Production Private Key',
     'SHOP_MODULE_sWeeOpenPayProdPublicKey'                  => 'Production Public Key',
-    'HELP_SHOP_MODULE_sWeeOpenPayProdPublicKey'             => 'Login to your <a target="_blank" href="https://www.OpenPay.com/en/cgi-bin/webscr?cmd=_get-api-signature&generic-flow=true">OpenPay Account</a> to get your API Signature.',
+    'HELP_SHOP_MODULE_sWeeOpenPayProdPublicKey'             => 'Login to your <a target="_blank" href="https://dashboard.openpay.mx/login">OpenPay Account</a> to get your API Signature.',
     'SHOP_MODULE_sWeeOpenPayProdUrl'                        => 'API Production URL',
 
     'SHOP_MODULE_blWeeOpenPaySandboxMode'                   => 'Activate sandbox mode',
     'SHOP_MODULE_sWeeOpenPaySandboxId'                      => 'Sanbox ID',
     'SHOP_MODULE_sWeeOpenPaySandboxPrivateKey'              => 'Sandbox Private Key',
     'SHOP_MODULE_sWeeOpenPaySandboxPublicKey'               => 'Sandbox Public Key',
-    'HELP_SHOP_MODULE_sWeeOpenPaySandboxPublicKey'          => 'Login to your <a target="_blank" href="https://www.sandbox.OpenPay.com/en/cgi-bin/webscr?cmd=_get-api-signature&generic-flow=true">OpenPay Account</a> to get your API Signature for the OpenPay Sandbox.',
-    
-    'SHOP_MODULE_sWeeOpenPaySandboxUrl'                     => 'Sandbox: Signature',
+    'HELP_SHOP_MODULE_sWeeOpenPaySandboxPublicKey'          => 'Login to your <a target="_blank" href="https://sandbox-dashboard.openpay.mx/login">OpenPay Account</a> to get your API Signature for the OpenPay Sandbox.',
+    'SHOP_MODULE_sWeeOpenPaySandboxUrl'                     => 'API Sandbox URL',
     'SHOP_MODULE_blOpenPayLoggerEnabled'                    => 'Activate OpenPay logging',
 
     

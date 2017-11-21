@@ -22,6 +22,8 @@
 
 namespace OxidEsales\OpenPayModule\Core;
 
+use Openpay;
+
 /**
  * ViewConfig class wrapper for PayPal module.
  *
@@ -29,231 +31,65 @@ namespace OxidEsales\OpenPayModule\Core;
  */
 class ViewConfig extends ViewConfig_parent
 {
-    /** @var null \OxidEsales\PayPalModule\Core\Config */
-    protected $payPalConfig = null;
+    /** @var null \OxidEsales\OpenPay\Module\Core\Config */
+    protected $openPayConfig = null;
+
 
     /**
      * PayPal payment object.
      *
      * @var \OxidEsales\Eshop\Application\Model\Payment|bool
      */
-    protected $payPalPayment = null;
+    protected $openPayPayment = null;
 
     /**
-     * Status if Express checkout is ON.
+     * Status if OpenPay is ON.
      *
      * @var bool
      */
-    protected $expressCheckoutEnabled = null;
+    protected $openPayEnabled = null;
 
     /**
-     * Status if Standard checkout is ON.
+     * Returns OpenPay config.
      *
-     * @var bool
+     * @return \OxidEsales\OpenPayModule\Core\Config
      */
-    protected $standardCheckoutEnabled = null;
-
-    /**
-     * Status if PayPal is ON.
-     *
-     * @var bool
-     */
-    protected $payPalEnabled = null;
-
-    /**
-     * PayPal Payment Validator object.
-     *
-     * @var \OxidEsales\PayPalModule\Model\PaymentValidator
-     */
-    protected $paymentValidator = null;
-
-    /**
-     * Set \OxidEsales\PayPalModule\Model\PaymentValidator.
-     *
-     * @param \OxidEsales\PayPalModule\Model\PaymentValidator $paymentValidator
-     */
-    public function setPaymentValidator($paymentValidator)
+    protected function getOpenPayConfig()
     {
-        $this->paymentValidator = $paymentValidator;
-    }
-
-    /**
-     * Get \OxidEsales\PayPalModule\Model\PaymentValidator. Create new if does not exist.
-     *
-     * @return \OxidEsales\PayPalModule\Model\PaymentValidator
-     */
-    public function getPaymentValidator()
-    {
-        if (is_null($this->paymentValidator)) {
-            $this->setPaymentValidator(oxNew(\OxidEsales\PayPalModule\Model\PaymentValidator::class));
+        if (is_null($this->openPayConfig)) {
+            $this->openPayConfig = oxNew(\OxidEsales\OpenPayModule\Core\Config::class);
         }
-
-        return $this->paymentValidator;
+        return $this->openPayConfig;
     }
 
     /**
-     * Returns TRUE if express checkout is enabled.
-     * Does payment amount or user country/group check.
-     *
-     * @return bool
-     */
-    public function isExpressCheckoutEnabled()
-    {
-        if ($this->expressCheckoutEnabled === null) {
-            $this->expressCheckoutEnabled = false;
-            if ($this->getPayPalConfig()->isExpressCheckoutEnabled()) {
-                $user = $this->getUser();
-                $validator = $this->getPaymentValidator();
-                $validator->setUser($user);
-                $validator->setConfig($this->getConfig());
-                $validator->setCheckCountry(false);
-
-                $this->expressCheckoutEnabled = $validator->isPaymentValid();
-            }
-        }
-
-        return $this->expressCheckoutEnabled;
-    }
-
-    /**
-     * Returns TRUE if express checkout and displaying it in mini basket is enabled.
-     *
-     * @return bool
-     */
-    public function isExpressCheckoutEnabledInMiniBasket()
-    {
-        $expressCheckoutEnabledInMiniBasket = false;
-        if ($this->isExpressCheckoutEnabled() && $this->getPayPalConfig()->isExpressCheckoutInMiniBasketEnabled()) {
-            $expressCheckoutEnabledInMiniBasket = true;
-        }
-
-        return $expressCheckoutEnabledInMiniBasket;
-    }
-
-    /**
-     * Returns TRUE if express checkout is enabled.
-     * Does payment amount or user country/group check.
-     *
-     * @return bool
-     */
-    public function isExpressCheckoutEnabledInDetails()
-    {
-        $expressCheckoutEnabledInDetails = false;
-        if ($this->isExpressCheckoutEnabled() && $this->getPayPalConfig()->isExpressCheckoutInDetailsPage()) {
-            $expressCheckoutEnabledInDetails = true;
-        }
-
-        return $expressCheckoutEnabledInDetails;
-    }
-
-    /**
-     * Returns TRUE if standard checkout is enabled.
-     * Does payment amount or user country/group check.
-     *
-     * @return bool
-     */
-    public function isStandardCheckoutEnabled()
-    {
-        if ($this->standardCheckoutEnabled === null) {
-            $this->standardCheckoutEnabled = false;
-            if ($this->getPayPalConfig()->isStandardCheckoutEnabled()) {
-                $user = $this->getUser();
-                $validator = $this->getPaymentValidator();
-                $validator->setUser($user);
-                $validator->setConfig($this->getConfig());
-
-                $this->standardCheckoutEnabled = $validator->isPaymentValid();
-            }
-        }
-
-        return $this->standardCheckoutEnabled;
-    }
-
-    /**
-     * Checks if PayPal standard or express checkout is enabled.
-     * Does not do payment amount or user country/group check.
-     *
-     * @return bool
-     */
-    public function isPayPalActive()
-    {
-        return $this->getPaymentValidator()->isPaymentActive();
-    }
-
-    /**
-     * Returns PayPal payment description text.
+     * Returns current OpenPay Id.
      *
      * @return string
      */
-    public function getPayPalPaymentDescription()
+    public function getOpenPayId()
     {
-        $desc = "";
-        if (($payPalPayment = $this->getPayPalPayment())) {
-            $desc = $payPalPayment->oxpayments__oxlongdesc->getRawValue();
-        }
-
-        return $desc;
+        return $this->getOpenPayConfig()->getOpenPayId();
     }
 
     /**
-     * Returns PayPal payment object.
+     * Returns current OpenPay Public API Key.
      *
-     * @return \OxidEsales\Eshop\Application\Model\Payment
+     * @return string
      */
-    public function getPayPalPayment()
+    public function getOpenPayPublicKey()
     {
-        if ($this->payPalPayment === null) {
-            $this->payPalPayment = false;
-            $payPalPayment = oxNew(\OxidEsales\Eshop\Application\Model\Payment::class);
-
-            // payment is not available/active?
-            if ($payPalPayment->load("oxidpaypal") && $payPalPayment->oxpayments__oxactive->value) {
-                $this->payPalPayment = $payPalPayment;
-            }
-        }
-
-        return $this->payPalPayment;
+        return $this->getOpenPayConfig()->getOpenPayPublicKey();
     }
 
     /**
-     * Returns state if order info should be send to PayPal.
+     * Returns current OpenPay Public API Key.
      *
-     * @return bool
+     * @return string
      */
-    public function sendOrderInfoToPayPal()
+    public function isSandboxEnabled()
     {
-        $sendInfoToPayPalEnabled = $this->getPayPalConfig()->sendOrderInfoToPayPal();
-        if ($sendInfoToPayPalEnabled) {
-            /** @var \OxidEsales\PayPalModule\Model\Basket $basket */
-            $basket = $this->getSession()->getBasket();
-            $sendInfoToPayPalEnabled = !$basket->isFractionQuantityItemsPresent();
-        }
-
-        return $sendInfoToPayPalEnabled;
-    }
-
-    /**
-     * Returns default (on/off) state if order info should be send to PayPal.
-     *
-     * @return bool
-     */
-    public function sendOrderInfoToPayPalDefault()
-    {
-        return $this->getPayPalConfig()->sendOrderInfoToPayPalDefault();
-    }
-
-    /**
-     * Returns PayPal config.
-     *
-     * @return \OxidEsales\PayPalModule\Core\Config
-     */
-    protected function getPayPalConfig()
-    {
-        if (is_null($this->payPalConfig)) {
-            $this->payPalConfig = oxNew(\OxidEsales\PayPalModule\Core\Config::class);
-        }
-
-        return $this->payPalConfig;
+        return $this->getOpenPayConfig()->isSandboxEnabled();
     }
 
     /**
@@ -261,8 +97,8 @@ class ViewConfig extends ViewConfig_parent
      *
      * @return string
      */
-    public function getCurrentUrl()
+    public function getOpenPayApiUrl()
     {
-        return $this->getPayPalConfig()->getCurrentUrl();
+        return $this->getOpenPayConfig()->getOpenPaySandboxApiUrl();
     }
 }

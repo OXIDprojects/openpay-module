@@ -22,417 +22,123 @@
 
 namespace OxidEsales\OpenPayModule\Core;
 
+use Openpay;
+
 /**
- * PayPal config class
+ * OpenPay config class
  */
 class Config
 {
     /**
-     * PayPal module id.
+     * OpenPay module id.
      *
      * @var string
      */
-    protected $payPalId = 'oepaypal';
+    protected $openPayId = null;
 
     /**
-     * PayPal host.
+     * OpenPay module id.
      *
      * @var string
      */
-    protected $payPalHost = 'api-3t.paypal.com';
+    protected $openPayPrivateKey = null;
 
     /**
-     * PayPal sandbox host.
+     * OpenPay module id.
      *
      * @var string
      */
-    protected $payPalSandboxHost = 'api-3t.sandbox.paypal.com';
+    protected $openPayPublicKey = null;
 
     /**
-     * PayPal sandbox Url where user must be redirected after his session gets PayPal token.
+     * OpenPay sandbox API url.
      *
      * @var string
      */
-    protected $payPalSandboxUrl = 'https://www.sandbox.paypal.com/cgi-bin/webscr';
+    protected $openPaySandboxApiUrl = 'https://sandbox-api.openpay.mx/v1/';
 
     /**
-     * PayPal Url where user must be redirected after his session gets PayPal token.
+     * OpenPay API url.
      *
      * @var string
      */
-    protected $payPalUrl = 'https://www.paypal.com/cgi-bin/webscr';
+    protected $openPayApiUrl = 'https://api.openpay.mx/v1/';
+
 
     /**
-     * PayPal sandbox API url.
+     *  OpenPay Id setter
      *
-     * @var string
+     * @param string $OpenPayId
      */
-    protected $payPalSandboxApiUrl = 'https://api-3t.sandbox.paypal.com/nvp';
+    public function setOpenPayApiId($OpenPayId)
+    {
+        $this->openPayId = $OpenPayId;
+    }
 
     /**
-     * PayPal API url.
-     *
-     * @var string
-     */
-    protected $payPalApiUrl = 'https://api-3t.paypal.com/nvp';
-
-    /**
-     * Maximum possible delivery costs value.
-     *
-     * @var double
-     */
-    protected $maxDeliveryAmount = 30;
-
-    /**
-     * Please do not change this place.
-     * It is important to guarantee the future development of this OXID eShop extension and to keep it free of charge.
-     * Thanks!
-     *
-     * @var array Partner codes based on edition
-     */
-    protected $partnerCodes = array(
-        'EE' => 'OXID_Cart_EnterpriseECS',
-        'PE' => 'OXID_Cart_ProfessionalECS',
-        'CE' => 'OXID_Cart_CommunityECS',
-    );
-
-    /**
-     * Return PayPal module id.
+     * OpenPay Id getter
      *
      * @return string
      */
-    public function getModuleId()
+    public function getOpenPayId()
     {
-        return $this->payPalId;
+        return $this->openPayId;
     }
-
     /**
-     * Sets PayPal host.
-     *
-     * @param string $payPalHost
-     */
-    public function setPayPalHost($payPalHost)
-    {
-        $this->payPalHost = $payPalHost;
-    }
-
-    /**
-     * Returns PayPal host.
+     * Public API Key setter
      *
      * @return string
      */
-    public function getPayPalHost()
+    public function setOpenPayPublicKey($openPayPublicKey)
     {
-        $host = $this->getConfig()->getConfigParam('sPayPalHost');
-        if ($host) {
-            $this->setPayPalHost($host);
-        }
-
-        return $this->payPalHost;
+        $this->openPayPublicKey = $openPayPublicKey;
     }
 
     /**
-     * Sets PayPal sandbox host.
-     *
-     * @param string $payPalSandboxHost
-     */
-    public function setPayPalSandboxHost($payPalSandboxHost)
-    {
-        $this->payPalSandboxHost = $payPalSandboxHost;
-    }
-
-    /**
-     * Returns PayPal sandbox host.
+     *  Public API Key setter
      *
      * @return string
      */
-    public function getPayPalSandboxHost()
-    {
-        $host = $this->getConfig()->getConfigParam('sPayPalSandboxHost');
-        if ($host) {
-            $this->setPayPalSandboxHost($host);
-        }
-
-        return $this->payPalSandboxHost;
-    }
-
-    /**
-     * Returns PayPal OR PayPal sandbox host.
-     *
-     * @return string
-     */
-    public function getHost()
+    public function getOpenPayPublicKey()
     {
         if ($this->isSandboxEnabled()) {
-            $url = $this->getPayPalSandboxHost();
-        } else {
-            $url = $this->getPayPalHost();
+            $key = $this->getConfig()->getConfigParam('sWeeOpenPaySandboxPublicKey');
+        }else{
+            $key = $this->getConfig()->getConfigParam('sWeeOpenPayProdPublicKey');
         }
 
-        return $url;
+        if ($key) {
+            $this->setOpenPayPublicKey($key);
+        }
+
+        return $this->openPayPublicKey;
     }
 
+
+
     /**
-     *  Api Url setter
+     * OpenPay sandbox api url setter
      *
-     * @param string $payPalApiUrl
+     * @param string $openPaySandboxApiUrl
      */
-    public function setPayPalApiUrl($payPalApiUrl)
+    public function setOpenPaySandboxApiUrl($openPaySandboxApiUrl)
     {
-        $this->payPalApiUrl = $payPalApiUrl;
+        $this->openPaySandboxApiUrl = $openPaySandboxApiUrl;
     }
 
     /**
-     *  Api Url getter
+     * OpenPay sandbox api url getter
      *
      * @return string
      */
-    public function getPayPalApiUrl()
+    public function getOpenPaySandboxApiUrl()
     {
-        $url = $this->getConfig()->getConfigParam('sPayPalApiUrl');
+        $url = $this->getConfig()->getConfigParam('sWeeOpenPaySandboxUrl');
         if ($url) {
-            $this->setPayPalApiUrl($url);
+            $this->setOpenPaySandboxApiUrl($url);
         }
 
-        return $this->payPalApiUrl;
-    }
-
-    /**
-     * PayPal sandbox api url setter
-     *
-     * @param string $payPalSandboxApiUrl
-     */
-    public function setPayPalSandboxApiUrl($payPalSandboxApiUrl)
-    {
-        $this->payPalSandboxApiUrl = $payPalSandboxApiUrl;
-    }
-
-    /**
-     * PayPal sandbox api url getter
-     *
-     * @return string
-     */
-    public function getPayPalSandboxApiUrl()
-    {
-        $url = $this->getConfig()->getConfigParam('sPayPalSandboxApiUrl');
-        if ($url) {
-            $this->setPayPalSandboxApiUrl($url);
-        }
-
-        return $this->payPalSandboxApiUrl;
-    }
-
-    /**
-     * Returns end point url
-     *
-     * @return string
-     */
-    public function getApiUrl()
-    {
-        if ($this->isSandboxEnabled()) {
-            $url = $this->getPayPalSandboxApiUrl();
-        } else {
-            $url = $this->getPayPalApiUrl();
-        }
-
-        return $url;
-    }
-
-    /**
-     * PayPal Url Setter
-     *
-     * @param string $payPalUrl
-     */
-    public function setPayPalUrl($payPalUrl)
-    {
-        $this->payPalUrl = $payPalUrl;
-    }
-
-    /**
-     * PayPal sandbox url setter
-     *
-     * @param string $payPalSandboxUrl
-     */
-    public function setPayPalSandboxUrl($payPalSandboxUrl)
-    {
-        $this->payPalSandboxUrl = $payPalSandboxUrl;
-    }
-
-    /**
-     * PayPal sandbox url getter
-     *
-     * @return string
-     */
-    public function getPayPalUrl()
-    {
-        $url = $this->getConfig()->getConfigParam('sPayPalUrl');
-        if ($url) {
-            $this->setPayPalUrl($url);
-        }
-
-        return $this->payPalUrl;
-    }
-
-    /**
-     * PayPal sandbox url getter
-     *
-     * @return string
-     */
-    public function getPayPalSandboxUrl()
-    {
-        $url = $this->getConfig()->getConfigParam('sPayPalSandboxUrl');
-        if ($url) {
-            $this->setPayPalSandboxUrl($url);
-        }
-
-        return $this->payPalSandboxUrl;
-    }
-
-    /**
-     * Get PayPal url.
-     *
-     * @return string
-     */
-    public function getUrl()
-    {
-        if ($this->isSandboxEnabled()) {
-            $url = $this->getPayPalSandboxUrl();
-        } else {
-            $url = $this->getPayPalUrl();
-        }
-
-        return $url;
-    }
-
-    /**
-     * Returns module config parameter value
-     *
-     * @param string $paramName parameter name
-     *
-     * @return mixed
-     */
-    public function getParameter($paramName)
-    {
-        return $this->getConfig()->getConfigParam($paramName);
-    }
-
-    /**
-     * Returns true if Express Checkout is ON
-     *
-     * @return bool
-     */
-    public function isExpressCheckoutEnabled()
-    {
-        return $this->getParameter('blOEPayPalExpressCheckout');
-    }
-
-    /**
-     * Returns true if Express Checkout is ON in mini basket
-     *
-     * @return bool
-     */
-    public function isExpressCheckoutInMiniBasketEnabled()
-    {
-        return $this->getParameter('blOEPayPalECheckoutInMiniBasket');
-    }
-
-    /**
-     * Returns true if Standard PayPal Checkout is ON
-     *
-     * @return bool
-     */
-    public function isStandardCheckoutEnabled()
-    {
-        return $this->getParameter('blOEPayPalStandardCheckout');
-    }
-
-    /**
-     * Returns true if logging request/response to PayPal is enabled
-     *
-     * @return bool
-     */
-    public function isLoggingEnabled()
-    {
-        return $this->getParameter('blPayPalLoggerEnabled');
-    }
-
-    /**
-     * Returns Brand/Shop name [OXID ESHOP]
-     *
-     * @return string
-     */
-    public function getBrandName()
-    {
-        $shopName = $this->getParameter('sOEPayPalBrandName');
-
-        if (empty($shopName)) {
-            $shop = $this->getConfig()->getActiveShop();
-            $shopName = $shop->oxshops__oxname->value;
-        }
-
-        return $shopName;
-    }
-
-    /**
-     * Returns custom cart border color which is displayed in PayPal side
-     *
-     * @return string
-     */
-    public function getBorderColor()
-    {
-        return $this->getParameter('sOEPayPalBorderColor');
-    }
-
-    /**
-     * Returns TRUE if order finalization on PayPal side is on
-     *
-     * @return bool
-     */
-    public function finalizeOrderOnPayPalSide()
-    {
-        $finalize = $this->getParameter('blOEPayPalFinalizeOrderOnPayPal');
-
-        return $finalize !== null ? $finalize : false;
-    }
-
-    /**
-     * Send order info to PayPal or not
-     *
-     * @return bool
-     */
-    public function sendOrderInfoToPayPal()
-    {
-        return $this->getParameter('blOEPayPalSendToPayPal');
-    }
-
-    /**
-     * Send order info to PayPal or not config's default value: checked or not
-     *
-     * @return bool
-     */
-    public function sendOrderInfoToPayPalDefault()
-    {
-        return $this->getParameter('blOEPayPalDefaultUserChoice');
-    }
-
-    /**
-     * Guest buy mode getter
-     *
-     * @return bool
-     */
-    public function isGuestBuyEnabled()
-    {
-        return $this->getParameter('blOEPayPalGuestBuyRole');
-    }
-
-    /**
-     * Returns true of GiroPay is ON (not implemented yet)
-     *
-     * @return bool
-     */
-    public function isGiroPayEnabled()
-    {
-        return false;
+        return $this->openPaySandboxApiUrl;
     }
 
     /**
@@ -442,290 +148,36 @@ class Config
      */
     public function isSandboxEnabled()
     {
-        return $this->getParameter('blOEPayPalSandboxMode');
+        return $this->getConfig()->getConfigParam('blWeeOpenPaySandboxMode');
+
     }
 
     /**
-     * Returns Empty Stock Level
+     * Returns oCustomer
      *
      * @return string
      */
-    public function getEmptyStockLevel()
+    public function setCustomer()
     {
-        return $this->getParameter('sOEPayPalEmptyStockLevel');
-    }
+        $openpay = Openpay::getInstance('minmfgtfzq6awl0rpj8a', 'sk_53895eb1c4a14fa7b1370d8f36f6e3d1');
 
-    /**
-     * Returns PayPal password
-     *
-     * @return string
-     */
-    public function getPassword()
-    {
-        if ($this->isSandboxEnabled()) {
-            // sandbox password
-            return $this->getParameter('sOEPayPalSandboxPassword');
-        }
+        $customerData = array(
+            'name' => 'Teo',
+            'last_name' => 'Velazco',
+            'email' => 'teofilo@payments.com',
+            'phone_number' => '4421112233',
+            'address' => array(
+                'line1' => 'Privada Rio No. 12',
+                'line2' => 'Co. El Tintero',
+                'line3' => '',
+                'postal_code' => '76920',
+                'state' => 'Querétaro',
+                'city' => 'Querétaro.',
+                'country_code' => 'MX'));
 
-        // password
-        return $this->getParameter('sOEPayPalPassword');
-    }
+        $customer = $openpay->customers->add($customerData);
 
-    /**
-     * Returns PayPal user name
-     *
-     * @return string
-     */
-    public function getUserName()
-    {
-        if ($this->isSandboxEnabled()) {
-            // sandbox login
-            return $this->getParameter('sOEPayPalSandboxUsername');
-        }
-
-        // login
-        return $this->getParameter('sOEPayPalUsername');
-    }
-
-    /**
-     * Returns PayPal user name
-     *
-     * @return string
-     */
-    public function getUserEmail()
-    {
-        if ($this->isSandboxEnabled()) {
-            // sandbox login
-            return $this->getParameter('sOEPayPalSandboxUserEmail');
-        }
-
-        // login
-        return $this->getParameter('sOEPayPalUserEmail');
-    }
-
-    /**
-     * Returns PayPal signature
-     *
-     * @return string
-     */
-    public function getSignature()
-    {
-        if ($this->isSandboxEnabled()) {
-            // sandbox signature
-            return $this->getParameter('sOEPayPalSandboxSignature');
-        }
-
-        // test sandbox signature
-        return $this->getParameter('sOEPayPalSignature');
-    }
-
-    /**
-     * Returns PayPal transaction mode
-     *
-     * @return string
-     */
-    public function getTransactionMode()
-    {
-        return $this->getParameter('sOEPayPalTransactionMode');
-    }
-
-
-    /**
-     * Returns redirect url.
-     *
-     * @param string $token      token to append to redirect url.
-     * @param string $userAction checkout button action - continue (standard checkout) or commit (express checkout)
-     *
-     * @return string
-     */
-    public function getPayPalCommunicationUrl($token = null, $userAction = 'continue')
-    {
-        return $this->getUrl() . '&cmd=_express-checkout&token=' . (string) $token . '&useraction=' . (string) $userAction;
-    }
-
-
-    /**
-     * Get logo Url based on selected settings
-     * Returns shop url, or false
-     *
-     * @return string|bool
-     */
-    public function getLogoUrl()
-    {
-        $logoUrl = false;
-
-        $logoName = $this->getLogoImageName();
-
-        if (!empty($logoName)) {
-            $logo = oxNew(\OxidEsales\PayPalModule\Core\ShopLogo::class);
-            $logo->setImageDir($this->getConfig()->getImageDir());
-            $logo->setImageDirUrl($this->getConfig()->getImageUrl());
-            $logo->setImageName($logoName);
-            $logo->setImageHandler(\OxidEsales\Eshop\Core\Registry::getUtilsPic());
-
-            $logoUrl = $logo->getShopLogoUrl();
-        }
-
-        return $logoUrl;
-    }
-
-    /**
-     * Returns IPN callback url
-     *
-     * @return string
-     */
-    public function getIPNCallbackUrl()
-    {
-        return $this->getShopUrl() . 'index.php?cl=oepaypalipnhandler&fnc=handleRequest&shp=' . $this->getShopId();
-    }
-
-    /**
-     * Returns SSL or non SSL shop URL without index.php depending on Mall
-     * affecting environment is admin mode and current ssl usage status
-     *
-     * @param bool $admin if admin
-     *
-     * @return string
-     */
-    public function getShopUrl($admin = null)
-    {
-        return $this->getConfig()->getCurrentShopUrl($admin);
-    }
-
-    /**
-     * Wrapper to get language object from registry.
-     *
-     * @return \OxidEsales\Eshop\Core\Language
-     */
-    public function getLang()
-    {
-        return \OxidEsales\Eshop\Core\Registry::getLang();
-    }
-
-    /**
-     * Wrapper to get utils object from registry.
-     *
-     * @return \OxidEsales\Eshop\Core\Utils
-     */
-    public function getUtils()
-    {
-        return \OxidEsales\Eshop\Core\Registry::getUtils();
-    }
-
-    /**
-     * Returns shop charset
-     *
-     * @return string
-     */
-    public function getCharset()
-    {
-        $charset = 'UTF-8';
-
-        return $charset;
-    }
-
-    /**
-     * Returns Url for IPN response call to notify PayPal
-     *
-     * @return string
-     */
-    public function getIPNResponseUrl()
-    {
-        return $this->getUrl() . '&cmd=_notify-validate';
-    }
-
-    /**
-     * Returns true if Express Checkout is in details page
-     *
-     * @return bool
-     */
-    public function isExpressCheckoutInDetailsPage()
-    {
-        return $this->getParameter('blOEPayPalECheckoutInDetails');
-    }
-
-    /**
-     * Returns current URL
-     *
-     * @return string
-     */
-    public function getCurrentUrl()
-    {
-        return \OxidEsales\Eshop\Core\Registry::getUtilsUrl()->getCurrentUrl();
-    }
-
-    /**
-     * Returns max delivery amount.
-     *
-     * @return integer
-     */
-    public function getMaxPayPalDeliveryAmount()
-    {
-        $maxDeliveryAmount = $this->getConfig()->getConfigParam('dMaxPayPalDeliveryAmount');
-        if (!$maxDeliveryAmount) {
-            $maxDeliveryAmount = $this->maxDeliveryAmount;
-        }
-
-        return $maxDeliveryAmount;
-    }
-
-    /**
-     * Please do not change this place.
-     * It is important to guarantee the future development of this OXID eShop extension and to keep it free of charge.
-     * Thanks!
-     *
-     * @return string partner code.
-     */
-    public function getPartnerCode()
-    {
-        return $this->partnerCodes[$this->getConfig()->getEdition()];
-    }
-
-    /**
-     * Detects device type
-     *
-     * @return bool
-     */
-    public function isDeviceMobile()
-    {
-        $userAgent = oxNew(\OxidEsales\PayPalModule\Core\UserAgent::class);
-
-        return ($userAgent->getDeviceType() == 'mobile');
-    }
-
-    /**
-     * Returns id of shipping assigned for EC for mobile devices
-     *
-     * @return string
-     */
-    public function getMobileECDefaultShippingId()
-    {
-        return $this->getConfig()->getConfigParam('sOEPayPalMECDefaultShippingId');
-    }
-
-    /**
-     * Returns logo image name according to parameter
-     *
-     * @return mixed|string
-     */
-    protected function getLogoImageName()
-    {
-        $option = $this->getParameter('sOEPayPalLogoImageOption');
-        switch ($option) {
-            case 'shopLogo':
-                $logo = $this->getParameter('sShopLogo');
-                break;
-            case 'customLogo':
-                $logo = $this->getParameter('sOEPayPalCustomShopLogoImage');
-                break;
-            case 'noLogo':
-            default:
-                $logo = '';
-
-                return $logo;
-        }
-
-        return $logo;
+        return $customer;
     }
 
     /**
@@ -746,5 +198,35 @@ class Config
     protected function getConfig()
     {
         return \OxidEsales\Eshop\Core\Registry::getConfig();
+    }
+
+    /**
+     * Returns current URL.
+     *
+     * @return string
+     */
+    public function getAlgo()
+    {
+        $openpay = Openpay::getInstance('minmfgtfzq6awl0rpj8a', 'sk_53895eb1c4a14fa7b1370d8f36f6e3d1');
+
+        $cardData = array(
+            'holder_name' => 'Teofilo Velazco',
+            'card_number' => '4111111111111111',
+            'cvv2' => '123',
+            'expiration_month' => '12',
+            'expiration_year' => '19',
+            'address' => array(
+                'line1' => 'Privada Rio No. 12',
+                'line2' => 'Co. El Tintero',
+                'line3' => '',
+                'postal_code' => '76920',
+                'state' => 'Querétaro',
+                'city' => 'Querétaro.',
+                'country_code' => 'MX'));
+
+        $customer = $openpay->customers->get('adytt9exbow9xfxvobxc');
+        $card = $customer->cards->add($cardData);
+
+        return $card;
     }
 }

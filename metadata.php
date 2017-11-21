@@ -60,6 +60,10 @@ $aModule = [
             'block'=>'select_payment',
             'file'=>'/views/blocks/page/checkout/weeopenpaypaymentselector.tpl'
         ],
+        ['template' => 'page/checkout/payment.tpl',
+            'block'=>'checkout_payment_nextstep',
+            'file'=>'/views/blocks/page/checkout/weeopenpaypaymentcheckout.tpl'
+        ],
 
     ],
     'settings'    => [
@@ -120,7 +124,7 @@ $aModule = [
         ],
         [
             'group' => 'weeopenpay_sandbox',
-            'name' => 'sWeeOpenPaySandboxUrl',
+            'name' =>  'sWeeOpenPaySandboxUrl',
             'type' => 'str',
             'value' => ''
         ],
