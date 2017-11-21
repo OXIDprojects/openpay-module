@@ -1,5 +1,5 @@
 {
-    "name": "weetsi/openpay-module",
+    "name": "weetsi/oxid-openpay-module",
     "description": "This is the OpenPay module for the OXID eShop.",
     "type": "oxideshop-module",
     "keywords": ["oxid", "modules", "eShop", "OpenPay"],
