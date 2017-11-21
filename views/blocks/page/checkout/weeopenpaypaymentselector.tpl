@@ -2,18 +2,42 @@
 [{assign var="sOpenPayId" value=$oViewConf->getOpenPayId()}]
 [{assign var="sPublicKey" value=$oViewConf->getOpenPayPublicKey()}]
 [{assign var="blOpenPaySandbox" value=$oViewConf->isSandboxEnabled()}]
-[{$sPublicKey|var_dump}]
-[{oxscript include="js/libs/jquery.min.js"}]
-[{oxscript include="https://openpay.s3.amazonaws.com/openpay.v1.min.js"}]
 
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <script type="text/javascript" src="https://openpay.s3.amazonaws.com/openpay.v1.min.js"></script>
+
 <script type="text/javascript">
-    $(document).ready(function() {
-        OpenPay.setId('[{$sOpenPayId}]');
-        OpenPay.setApiKey('[{$sOpenPayId}]');
-        OpenPay.setSandboxMode('[{$blOpenPaySandbox}]');
-    });
+    [{capture append="aCustomScripts"}]
+    $( function()
+        {
+            OpenPay.setId('[{$sOpenPayId}]');
+            OpenPay.setApiKey('[{$sOpenPayId}]');
+            OpenPay.setSandboxMode('[{$blOpenPaySandbox}]');
+            alert(OpenPay);
+
+            function validateOpenPay(e) {
+                e.preventDefault();
+
+                $("#save-button").prop( "disabled", true);
+                OpenPay.token.extractFormAndCreate('customer-form', success_callbak, error_callbak);
+            };
+
+            var success_callbak = function(response) {
+                var token_id = response.data.id;
+                $('#token_id').val(token_id);
+                $('#customer-form').submit();
+            };
+
+            var error_callbak = function(response) {
+                var desc = response.data.description != undefined ? response.data.description : response.message;
+                alert("ERROR [" + response.status + "] " + desc);
+                $("#save-button").prop("disabled", false);
+            };
+        }
+    );
+    [{/capture}]
 </script>
+
 
 [{if $sPaymentID == "openpaycredit"}]
     [{assign var="dynvalue" value=$oView->getDynValue()}]
@@ -110,3 +134,7 @@
         [{/block}]
     </dd>
 </dl>
+
+[{foreach from=$aCustomScripts item="sScript"}]
+    [{oxscript add=$sScript priority=10}]
+[{/foreach}]

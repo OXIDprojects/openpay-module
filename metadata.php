@@ -53,7 +53,8 @@ $aModule = [
 
     ],
     'events'      => [
-
+        'onActivate'   => '\OxidEsales\OpenPayModule\Core\Events::onActivate',
+        'onDeactivate' => '\OxidEsales\OpenPayModule\Core\Events::onDeactivate'
     ],
     'blocks'      => [
         ['template' => 'page/checkout/payment.tpl',
