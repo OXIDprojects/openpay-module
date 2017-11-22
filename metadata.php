@@ -42,6 +42,8 @@ $aModule = [
     'email'       => 'info@weetsi.com',
     'extend'      => [
         \OxidEsales\Eshop\Core\ViewConfig::class => \OxidEsales\OpenPayModule\Core\ViewConfig::class,
+        \OxidEsales\Eshop\Application\Controller\PaymentController::class     => \OxidEsales\OpenPayModule\Controller\PaymentController::class,
+
 
     ],
     'controllers'       => [

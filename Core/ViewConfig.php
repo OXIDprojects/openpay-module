@@ -25,7 +25,7 @@ namespace OxidEsales\OpenPayModule\Core;
 use Openpay;
 
 /**
- * ViewConfig class wrapper for PayPal module.
+ * ViewConfig class wrapper for OpenPay module.
  *
  * @mixin \OxidEsales\Eshop\Core\ViewConfig
  */
@@ -36,7 +36,7 @@ class ViewConfig extends ViewConfig_parent
 
 
     /**
-     * PayPal payment object.
+     * OpenPay payment object.
      *
      * @var \OxidEsales\Eshop\Application\Model\Payment|bool
      */
@@ -69,7 +69,7 @@ class ViewConfig extends ViewConfig_parent
      */
     public function getOpenPayId()
     {
-        return $this->getOpenPayConfig()->getOpenPayId();
+        return $this->getOpenPayConfig()->getOpenPayApiId();
     }
 
     /**

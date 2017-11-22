@@ -30,11 +30,13 @@ use Openpay;
 class Config
 {
     /**
-     * OpenPay module id.
+     * OpenPay api id.
      *
      * @var string
      */
     protected $openPayId = null;
+
+
 
     /**
      * OpenPay module id.
@@ -66,10 +68,10 @@ class Config
 
 
     /**
-     *  OpenPay Id setter
-     *
-     * @param string $OpenPayId
-     */
+ *  OpenPay Id setter
+ *
+ * @param string $OpenPayId
+ */
     public function setOpenPayApiId($OpenPayId)
     {
         $this->openPayId = $OpenPayId;
@@ -80,10 +82,22 @@ class Config
      *
      * @return string
      */
-    public function getOpenPayId()
+    public function getOpenPayApiId()
     {
+        if ($this->isSandboxEnabled()) {
+            $ApiId = $this->getConfig()->getConfigParam('sWeeOpenPaySandboxId');
+        }else{
+            $ApiId = $this->getConfig()->getConfigParam('sWeeOpenPayProdId');
+        }
+
+        if ($ApiId) {
+            $this->setOpenPayApiId($ApiId);
+        }
+
         return $this->openPayId;
     }
+
+
     /**
      * Public API Key setter
      *
@@ -113,6 +127,37 @@ class Config
 
         return $this->openPayPublicKey;
     }
+
+    /**
+     * Public API Key setter
+     *
+     * @return string
+     */
+    public function setOpenPayPrivateKey($openPayPrivateKey)
+    {
+        $this->openPayPrivateKey = $openPayPrivateKey;
+    }
+
+    /**
+     *  Public API Key setter
+     *
+     * @return string
+     */
+    public function getOpenPayPrivateKey()
+    {
+        if ($this->isSandboxEnabled()) {
+            $key = $this->getConfig()->getConfigParam('sWeeOpenPaySandboxPrivateKey');
+        }else{
+            $key = $this->getConfig()->getConfigParam('sWeeOpenPayProdPrivateKey');
+        }
+
+        if ($key) {
+            $this->setOpenPayPrivateKey($key);
+        }
+
+        return $this->openPayPrivateKey;
+    }
+
 
 
 
@@ -152,33 +197,6 @@ class Config
 
     }
 
-    /**
-     * Returns oCustomer
-     *
-     * @return string
-     */
-    public function setCustomer()
-    {
-        $openpay = Openpay::getInstance('minmfgtfzq6awl0rpj8a', 'sk_53895eb1c4a14fa7b1370d8f36f6e3d1');
-
-        $customerData = array(
-            'name' => 'Teo',
-            'last_name' => 'Velazco',
-            'email' => 'teofilo@payments.com',
-            'phone_number' => '4421112233',
-            'address' => array(
-                'line1' => 'Privada Rio No. 12',
-                'line2' => 'Co. El Tintero',
-                'line3' => '',
-                'postal_code' => '76920',
-                'state' => 'Querétaro',
-                'city' => 'Querétaro.',
-                'country_code' => 'MX'));
-
-        $customer = $openpay->customers->add($customerData);
-
-        return $customer;
-    }
 
     /**
      * Returns active shop id
@@ -200,33 +218,4 @@ class Config
         return \OxidEsales\Eshop\Core\Registry::getConfig();
     }
 
-    /**
-     * Returns current URL.
-     *
-     * @return string
-     */
-    public function getAlgo()
-    {
-        $openpay = Openpay::getInstance('minmfgtfzq6awl0rpj8a', 'sk_53895eb1c4a14fa7b1370d8f36f6e3d1');
-
-        $cardData = array(
-            'holder_name' => 'Teofilo Velazco',
-            'card_number' => '4111111111111111',
-            'cvv2' => '123',
-            'expiration_month' => '12',
-            'expiration_year' => '19',
-            'address' => array(
-                'line1' => 'Privada Rio No. 12',
-                'line2' => 'Co. El Tintero',
-                'line3' => '',
-                'postal_code' => '76920',
-                'state' => 'Querétaro',
-                'city' => 'Querétaro.',
-                'country_code' => 'MX'));
-
-        $customer = $openpay->customers->get('adytt9exbow9xfxvobxc');
-        $card = $customer->cards->add($cardData);
-
-        return $card;
-    }
 }
