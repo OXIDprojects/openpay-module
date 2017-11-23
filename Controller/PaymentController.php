@@ -47,6 +47,7 @@ class PaymentController extends PaymentController_parent
         $sUserCountry = $oUser->getUserCountry($sUserCountryId)->value;
 
         $customerData = [
+            'external_id' => $oUser->oxuser__oxid->getRawValue(),
             'name' => $oUser->oxuser__oxfname->getRawValue(),
             'last_name' => $oUser->oxuser__oxlname->getRawValue(),
             'email' => $oUser->oxuser__oxusername->getRawValue(),
