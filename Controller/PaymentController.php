@@ -34,39 +34,38 @@ class PaymentController extends PaymentController_parent
     /** @var null \OxidEsales\OpenPay\Module\Core\Config */
     protected $openPayConfig = null;
 
-
     /**
-     * Detects is current payment must be processed by PayPal and instead of standard validation
-     * redirects to standard PayPal dispatcher
-     *
-     * @return bool
      */
     public function validatePayment()
     {
         $oOpenpay = $this->initOpenPay();
-        $aUserData = $this->getUser();
+        $oUser = $this->getUser();
 
-        $aDynData = $this->getConfig()->getRequestParameter("dynvalue");
+        $cardData =  $this->getConfig()->getRequestParameter( 'dynvalue');
 
-        $cardData = array(
-            'holder_name'       =>    $aDynData["kkname"],
-            'card_number'       =>    $aDynData["kknumber"],
-            'cvv2'              =>    $aDynData["kkpruef"],
-            'expiration_month'  =>    $aDynData["kkmonth"],
-            'expiration_year'   =>    $aDynData["kkyear"],
-            'address' => array(
-                'line1' =>  $aUserData['oxstreet'],
-                'line2' =>  $aUserData['oxstreetnr'],
-                'line3' =>  $aUserData['oxaddinfo'],
-                'postal_code' =>  $aUserData['oxzip'],
-                'state' =>  $aUserData['oxstateid'],
-                'city' =>  $aUserData['oxcity'],
-                'country_code' =>  $aUserData['oxcountryid']));
+        $sUserCountryId = $oUser->oxuser__oxcountryid->getRawValue();
+        $sUserCountry = $oUser->getUserCountry($sUserCountryId)->value;
 
+        $customerData = [
+            'name' => $oUser->oxuser__oxfname->getRawValue(),
+            'last_name' => $oUser->oxuser__oxlname->getRawValue(),
+            'email' => $oUser->oxuser__oxusername->getRawValue(),
+            'phone_number' => $oUser->oxuser__oxfon->getRawValue(),
+            'address' => [
+                'line1' =>  $oUser->oxuser__oxstreet->getRawValue(),
+                'line2' =>  $oUser->oxuser__oxstreetnr->getRawValue(),
+                'line3' =>  $oUser->oxuser__oxaddinfo->getRawValue(),
+                'postal_code' =>  $oUser->oxuser__oxzip->getRawValue(),
+                'state' =>  $oUser->oxuser__oxstateid->getRawValue(),
+                'city' =>  $oUser->oxuser__oxcity->getRawValue(),
+                'country_code' =>  $this->getUserCountryCode($sUserCountryId),
+            ]
+        ];
 
-        $oOpenpay->cards->add($cardData);
+        $customer = $oOpenpay->customers->add($customerData);
+        $card = $customer->cards->add($cardData);
 
-        return parent::validatePayment();
+        return parent::validatePayment($card);
 
     }
 
@@ -135,16 +134,13 @@ class PaymentController extends PaymentController_parent
         return $customer;
     }
 
-
-
-    /**
-     * Returns current URL.
-     *
-     * @return string
-     */
-    public function isConfirmedByPayPal($basket)
+    public function getUserCountryCode( $sCountryId = '' )
     {
+        /** @var oxCountry $oCountry */
+        $oCountry = oxNew( 'oxCountry' );
 
+        $oCountry->load( empty( $sCountryId ) ? $this->oxuser__oxcountryid->value : (string) $sCountryId );
 
+        return $oCountry->oxcountry__oxisoalpha2->value;
     }
 }
