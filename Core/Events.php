@@ -72,7 +72,7 @@ class Events
         $payment = oxNew(\OxidEsales\Eshop\Application\Model\Payment::class);
         if (!$payment->load('openpaycredit')) {
             $payment->setId('openpaycredit');
-            $payment->oxpayments__oxactive = new \OxidEsales\Eshop\Core\Field(1);
+            $payment->oxpayments__oxactive = new \OxidEsales\Eshop\Core\Field(0);
             $payment->oxpayments__oxdesc = new \OxidEsales\Eshop\Core\Field('OpenPay Credit Card');
             $payment->oxpayments__oxaddsum = new \OxidEsales\Eshop\Core\Field(0);
             $payment->oxpayments__oxaddsumtype = new \OxidEsales\Eshop\Core\Field('abs');
@@ -95,7 +95,7 @@ class Events
 
         if (!$payment->load('openpaydebit')) {
             $payment->setId('openpaydebit');
-            $payment->oxpayments__oxactive = new \OxidEsales\Eshop\Core\Field(1);
+            $payment->oxpayments__oxactive = new \OxidEsales\Eshop\Core\Field(0);
             $payment->oxpayments__oxdesc = new \OxidEsales\Eshop\Core\Field('OpenPay Debit Card');
             $payment->oxpayments__oxaddsum = new \OxidEsales\Eshop\Core\Field(0);
             $payment->oxpayments__oxaddsumtype = new \OxidEsales\Eshop\Core\Field('abs');
@@ -117,7 +117,7 @@ class Events
 
         if (!$payment->load('openpaystores')) {
             $payment->setId('openpaystores');
-            $payment->oxpayments__oxactive = new \OxidEsales\Eshop\Core\Field(1);
+            $payment->oxpayments__oxactive = new \OxidEsales\Eshop\Core\Field(0);
             $payment->oxpayments__oxdesc = new \OxidEsales\Eshop\Core\Field('OpenPay Pay on Stores');
             $payment->oxpayments__oxaddsum = new \OxidEsales\Eshop\Core\Field(0);
             $payment->oxpayments__oxaddsumtype = new \OxidEsales\Eshop\Core\Field('abs');
@@ -143,27 +143,27 @@ class Events
      *
      * @return bool
      */
-//    public static function isOpenPayActiveOnSubShops()
-//    {
-//        $active = false;
-//        $config = \OxidEsales\Eshop\Core\Registry::getConfig();
-//        $extensionChecker = oxNew(\OxidEsales\OpenPayModule\Core\ExtensionChecker::class);
-//        $shops = $config->getShopIds();
-//        $activeShopId = $config->getShopId();
-//
-//        foreach ($shops as $shopId) {
-//            if ($shopId != $activeShopId) {
-//                $extensionChecker->setShopId($shopId);
-//                $extensionChecker->setExtensionId('weeopenpay');
-//                if ($extensionChecker->isActive()) {
-//                    $active = true;
-//                    break;
-//                }
-//            }
-//        }
-//
-//        return $active;
-//    }
+    public static function isOpenPayActiveOnSubShops()
+    {
+        $active = false;
+        $config = \OxidEsales\Eshop\Core\Registry::getConfig();
+        $extensionChecker = oxNew(\OxidEsales\OpenPayModule\Core\ExtensionChecker::class);
+        $shops = $config->getShopIds();
+        $activeShopId = $config->getShopId();
+
+        foreach ($shops as $shopId) {
+            if ($shopId != $activeShopId) {
+                $extensionChecker->setShopId($shopId);
+                $extensionChecker->setExtensionId('weeopenpay');
+                if ($extensionChecker->isActive()) {
+                    $active = true;
+                    break;
+                }
+            }
+        }
+
+        return $active;
+    }
 
     /**
      * Disables OpenPay Credit Card payment method
@@ -383,11 +383,11 @@ class Events
         // enabling OpenPay Credit Card payment method
         self::enableCreditPaymentMethod();
 
-        // enabling OpenPay Debit Card payment method
-        self::enableDebitPaymentMethod();
-
-        // enabling OpenPay Stores payment method
-        self::enableStoresPaymentMethod();
+//        // enabling OpenPay Debit Card payment method
+//        self::enableDebitPaymentMethod();
+//
+//        // enabling OpenPay Stores payment method
+//        self::enableStoresPaymentMethod();
 
         // enable OpenPay RDF
         self::enableOpenPayRDFA();

@@ -20,34 +20,44 @@
  * @version   Weetsi OpenPay
  */
 
-namespace OxidEsales\OpenPayModule\Core;
+namespace OxidEsales\OpenPayModule\Controller;
 
 use Openpay;
 
 /**
- * ViewConfig class wrapper for OpenPay module.
+ * Order class wrapper for PayPal module
  *
- * @mixin \OxidEsales\Eshop\Core\ViewConfig
+ * @mixin \OxidEsales\Eshop\Application\Controller\OrderController
  */
-class ViewConfig extends ViewConfig_parent
+class OrderController extends OrderController_parent
 {
     /** @var null \OxidEsales\OpenPay\Module\Core\Config */
     protected $openPayConfig = null;
 
-
     /**
-     * OpenPay payment object.
+     * Checks if payment action is processed by PayPal
      *
-     * @var \OxidEsales\Eshop\Application\Model\Payment|bool
+     * @return bool
      */
-    protected $openPayPayment = null;
+    public function execute()
+    {
+        $oOpenpay = $this->initOpenPay();
+        $oUser = $this->getUser();
 
-    /**
-     * Status if OpenPay is ON.
-     *
-     * @var bool
-     */
-    protected $openPayEnabled = null;
+        $chargeData = array(
+            'source_id' => 'tvyfwyfooqsmfnaprsuk',
+            'method' => 'card',
+            'amount' => 100,
+            'description' => 'Cargo inicial a mi cuenta',
+            'order_id' => 'ORDEN-00070');
+
+        $customer = $oOpenpay->customers->get('a9ualumwnrcxkl42l6mh');
+        $charge = $customer->charges->create($chargeData);
+
+
+        die();
+        return parent::execute();
+    }
 
     /**
      * Returns OpenPay config.
@@ -70,51 +80,5 @@ class ViewConfig extends ViewConfig_parent
     public function getOpenPayId()
     {
         return $this->getOpenPayConfig()->getOpenPayApiId();
-    }
-
-    /**
-     * Returns current OpenPay Public API Key.
-     *
-     * @return string
-     */
-    public function getOpenPayPublicKey()
-    {
-        return $this->getOpenPayConfig()->getOpenPayPublicKey();
-    }
-
-    /**
-     * Returns current OpenPay Public API Key.
-     *
-     * @return string
-     */
-    public function isSandboxEnabled()
-    {
-        return $this->getOpenPayConfig()->isSandboxEnabled();
-    }
-
-    /**
-     * Returns current URL.
-     *
-     * @return string
-     */
-    public function getOpenPayApiUrl()
-    {
-        return $this->getOpenPayConfig()->getOpenPaySandboxApiUrl();
-    }
-
-    /**
-     * Template variable getter. Returns array of years for credit cards
-     *
-     * @return array
-     */
-    public function getCreditYears()
-    {
-        if ($this->_aCreditYears === null) {
-            $this->_aCreditYears = false;
-
-            $this->_aCreditYears = range(date('y'), date('y') + 10);
-        }
-
-        return $this->_aCreditYears;
     }
 }

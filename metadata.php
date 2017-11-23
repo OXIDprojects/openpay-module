@@ -41,10 +41,9 @@ $aModule = [
     'url'         => 'http://www.weetsi.com',
     'email'       => 'info@weetsi.com',
     'extend'      => [
-        \OxidEsales\Eshop\Core\ViewConfig::class => \OxidEsales\OpenPayModule\Core\ViewConfig::class,
+        \OxidEsales\Eshop\Core\ViewConfig::class                              => \OxidEsales\OpenPayModule\Core\ViewConfig::class,
         \OxidEsales\Eshop\Application\Controller\PaymentController::class     => \OxidEsales\OpenPayModule\Controller\PaymentController::class,
-
-
+        \OxidEsales\Eshop\Application\Controller\OrderController::class       => \OxidEsales\OpenPayModule\Controller\OrderController::class,
     ],
     'controllers'       => [
 
@@ -65,7 +64,11 @@ $aModule = [
         ],
         ['template' => 'page/checkout/payment.tpl',
             'block'=>'checkout_payment_nextstep',
-            'file'=>'/views/blocks/page/checkout/weeopenpaypaymentcheckout.tpl'
+            'file'=>'/views/blocks/page/checkout/weeopenpaypaymentcheckoutpayment.tpl'
+        ],
+        ['template' => 'page/checkout/order.tpl',
+            'block'=>'checkout_order_btn_confirm_bottom',
+            'file'=>'/views/blocks/page/checkout/weeopenpayoredercheckout.tpl'
         ],
 
     ],
