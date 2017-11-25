@@ -44,6 +44,8 @@ $aModule = [
         \OxidEsales\Eshop\Core\ViewConfig::class                              => \OxidEsales\OpenPayModule\Core\ViewConfig::class,
         \OxidEsales\Eshop\Application\Controller\PaymentController::class     => \OxidEsales\OpenPayModule\Controller\PaymentController::class,
         \OxidEsales\Eshop\Application\Controller\OrderController::class       => \OxidEsales\OpenPayModule\Controller\OrderController::class,
+
+        \OxidEsales\Eshop\Application\Model\Order::class                      => \OxidEsales\OpenPayModule\Model\Order::class,
     ],
     'controllers'       => [
 
@@ -58,17 +60,17 @@ $aModule = [
         'onDeactivate' => '\OxidEsales\OpenPayModule\Core\Events::onDeactivate'
     ],
     'blocks'      => [
-        ['template' => 'page/checkout/payment.tpl',
-            'block'=>'select_payment',
-            'file'=>'/views/blocks/page/checkout/weeopenpaypaymentselector.tpl'
+        ['template'     => 'page/checkout/payment.tpl',
+            'block'     => 'select_payment',
+            'file'      => 'views/blocks/page/checkout/weeopenpaypaymentselector.tpl'
         ],
-        ['template' => 'page/checkout/payment.tpl',
-            'block'=>'checkout_payment_nextstep',
-            'file'=>'/views/blocks/page/checkout/weeopenpaypaymentcheckoutpayment.tpl'
+        ['template'     => 'page/checkout/payment.tpl',
+            'block'     => 'checkout_payment_nextstep',
+            'file'      => 'views/blocks/page/checkout/weeopenpaypaymentcheckout.tpl'
         ],
-        ['template' => 'page/checkout/order.tpl',
-            'block'=>'checkout_order_btn_confirm_bottom',
-            'file'=>'/views/blocks/page/checkout/weeopenpayoredercheckout.tpl'
+        ['template'     => 'page/checkout/order.tpl',
+            'block'     => 'checkout_order_btn_confirm_bottom',
+            'file'      => 'views/blocks/page/checkout/weeopenpayordercheckout.tpl'
         ],
 
     ],
@@ -98,12 +100,6 @@ $aModule = [
             'value' => ''
         ],
 
-        [
-            'group' => 'weeopenpay_sandbox',
-            'name'  => 'blOpenPayLoggerEnabled',
-            'type'  => 'bool',
-            'value' => 'false'
-        ],
         [
             'group' => 'weeopenpay_sandbox',
             'name'  => 'blWeeOpenPaySandboxMode',

@@ -35,28 +35,66 @@ class OrderController extends OrderController_parent
     protected $openPayConfig = null;
 
     /**
-     * Checks if payment action is processed by PayPal
+     * Returns next order step. If ordering was sucessfull - returns string "thankyou" (possible
+     * additional parameters), otherwise - returns string "payment" with additional
+     * error parameters.
      *
-     * @return bool
+     * @param integer $iSuccess status code
+     *
+     * @return  string  $sNextStep  partial parameter url for next step
      */
-    public function execute()
+    protected function _getNextStep($iSuccess)
     {
+        $getNextStep = parent::_getNextStep($iSuccess);
+
         $oOpenpay = $this->initOpenPay();
-        $oUser = $this->getUser();
+        $sCustomer =  $this->getSession()->getVariable('customerid');
 
-        $chargeData = array(
-            'source_id' => 'tvyfwyfooqsmfnaprsuk',
+        $oOrder = $this->getOrder();
+
+        $aChargeData = array(
+            'source_id' => $this->getSession()->getVariable('tokenid'),
             'method' => 'card',
-            'amount' => 100,
-            'description' => 'Cargo inicial a mi cuenta',
-            'order_id' => 'ORDEN-00070');
+            'amount' => $oOrder->oxorder__oxtotalordersum->rawValue,
+            'description' => $oOrder->oxorder__oxpaymentid->rawValue,
+            'order_id' => $oOrder->oxorder__oxordernr->rawValue,
+            'device_session_id' => $this->getSession()->getVariable('deviceid'),
+        );
 
-        $customer = $oOpenpay->customers->get('a9ualumwnrcxkl42l6mh');
-        $charge = $customer->charges->create($chargeData);
+        $customer = $oOpenpay->customers->get($sCustomer);
+        $charge = $customer->charges->create($aChargeData);
+
+        //$this->markOrderPaid($charge);
+
+        return $getNextStep;
+
+    }
+
+    /**
+     * Returns current order object
+     *
+     * @return \OxidEsales\Eshop\Application\Model\Order
+     */
+    protected function markOrderPaid($charge)
+    {
+        $oOrder = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+
+        $oOrder->markOrderPaid($charge);
+
+    }
 
 
-        die();
-        return parent::execute();
+    /**
+     * Returns current order object
+     *
+     * @return \OxidEsales\Eshop\Application\Model\Order
+     */
+    protected function getOrder()
+    {
+        $order = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+        $order->load($this->getSession()->getVariable('sess_challenge'));
+
+        return $order;
     }
 
     /**
@@ -81,4 +119,20 @@ class OrderController extends OrderController_parent
     {
         return $this->getOpenPayConfig()->getOpenPayApiId();
     }
+
+    /**
+     * Returns OpenPay Object.
+     *
+     * @return object
+     */
+    public function initOpenPay()
+    {
+        $sOpenPayId = $this->getOpenPayConfig()->getOpenPayApiId();
+        $sPrivateApiKey = $this->getOpenPayConfig()->getOpenPayPrivateKey();
+
+        $openpay = Openpay::getInstance($sOpenPayId, $sPrivateApiKey);
+        return $openpay;
+
+    }
+
 }

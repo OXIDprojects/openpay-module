@@ -3,48 +3,6 @@
 [{assign var="sPublicKey" value=$oViewConf->getOpenPayPublicKey()}]
 [{assign var="blOpenPaySandbox" value=$oViewConf->isSandboxEnabled()}]
 
-
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<script type="text/javascript" src="https://openpay.s3.amazonaws.com/openpay.v1.min.js"></script>
-
-<script type="text/javascript">
-    [{capture append="aCustomScripts"}]
-    $( function()
-        {
-            $(document).ready(function() {
-
-                OpenPay.setId('[{$sOpenPayId}]');
-                OpenPay.setApiKey('[{$sPublicKey}]');
-                OpenPay.setSandboxMode('[{$blOpenPaySandbox}]');
-
-                $('#paymentNextStepBottom').on('click', function(event) {
-                    event.preventDefault();
-                    //$("#paymentNextStepBottom").prop( "disabled", true);
-                    OpenPay.token.extractFormAndCreate('payment', success_callbak, error_callbak);
-                });
-
-                var success_callbak = function(response) {
-                    var token_id = response.data.id;
-                    $('#token_id').val(token_id);
-                    $('#payment').submit();
-                };
-
-                var error_callbak = function(response) {
-                    var desc = response.data.description != undefined ? response.data.description : response.message;
-                    alert("ERROR [" + response.status + "] " + desc);
-                    $("#save-button").prop("disabled", false);
-                };
-            })
-        }
-    );
-    [{/capture}]
-</script>
-
-[{foreach from=$aCustomScripts item="sScript"}]
-[{oxscript add=$sScript priority=10}]
-[{/foreach}]
-
-
 [{if $sPaymentID == "openpaycredit"}]
     [{assign var="dynvalue" value=$oView->getDynValue()}]
 [{elseif $sPaymentID != "openpaycredit"}]
@@ -121,5 +79,51 @@
         [{/if}]
         [{/block}]
     </dd>
-</dl>*
+</dl>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script type="text/javascript" src="https://openpay.s3.amazonaws.com/openpay.v1.min.js"></script>
+<script type='text/javascript' src="https://openpay.s3.amazonaws.com/openpay-data.v1.min.js"></script>
+
+<script type="text/javascript">
+    [{capture append="aCustomScripts"}]
+    $( function()
+        {
+            $(document).ready(function() {
+
+                OpenPay.setId('[{$sOpenPayId}]');
+                OpenPay.setApiKey('[{$sPublicKey}]');
+                OpenPay.setSandboxMode('[{$blOpenPaySandbox}]');
+
+                var deviceSessionId = OpenPay.deviceData.setup('payment', 'device_session_id');
+
+                console.dir(deviceSessionId);
+
+                $('#paymentNextStepBottom').on('click', function(event) {
+                    event.preventDefault();
+                    //$("#paymentNextStepBottom").prop( "disabled", true);
+
+                    OpenPay.token.extractFormAndCreate('payment', success_callbak, error_callbak);
+
+                });
+
+                var success_callbak = function(response) {
+                    var token_id = response.data.id;
+                    $('#token_id').val(token_id);
+                    $('#payment').submit();
+                };
+
+                var error_callbak = function(response) {
+                    var desc = response.data.description != undefined ? response.data.description : response.message;
+                    alert("ERROR [" + response.status + "] " + desc);
+                    $("#save-button").prop("disabled", false);
+                };
+            })
+        }
+    );
+    [{/capture}]
+</script>
+[{foreach from=$aCustomScripts item="sScript"}]
+    [{oxscript add=$sScript priority=10}]
+    [{/foreach}]
 

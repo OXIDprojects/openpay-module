@@ -34,21 +34,21 @@ class PaymentController extends PaymentController_parent
     /** @var null \OxidEsales\OpenPay\Module\Core\Config */
     protected $openPayConfig = null;
 
-
     /**
-     */
+    */
     public function validatePayment()
     {
         $oOpenpay = $this->initOpenPay();
         $oUser = $this->getUser();
 
-        $aDynvalue =  $this->getConfig()->getRequestParameter( 'dynvalue');
+        $aDynvalue =   \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'dynvalue');
+        $sTokenId =     \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'token_id');
+        $sDeviceId =     \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'device_session_id');
 
         $sUserCountryId = $oUser->oxuser__oxcountryid->getRawValue();
         $sUserState = $oUser->oxuser__oxstateid->getRawValue();
 
-
-        $customerData = [
+        $aCustomerData = [
               //'external_id' => $oUser->oxuser__oxid->getRawValue(),
                 'name' => $oUser->oxuser__oxfname->getRawValue(),
                 'last_name' => $oUser->oxuser__oxlname->getRawValue(),
@@ -65,17 +65,29 @@ class PaymentController extends PaymentController_parent
                 ]
             ];
 
-        $customer = $oOpenpay->customers->add($customerData);
+        $customer = $oOpenpay->customers->add($aCustomerData);
         $card = $customer->cards->add($aDynvalue);
+        //$this->_card2user($card);
 
-        return parent::validatePayment($card);
+        $paymentId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('paymentid');
+        $session = $this->getSession();
+        $basket = $session->getBasket();
+
+        if ($paymentId === 'openpaycredit' && !$this->isConfirmedByPayPal($basket)) {
+            $session->setVariable('paymentid', 'openpaycredit');
+            $session->setVariable('tokenid', $sTokenId);
+            $session->setVariable('deviceid', $sDeviceId);
+            $session->setVariable('customerid', $card->customer_id);
+        }
+
+        return parent::validatePayment();
 
     }
 
     /**
-     * Returns current URL.
+     * Returns OpenPay Object.
      *
-     * @return string
+     * @return object
      */
     public function initOpenPay()
     {
@@ -125,12 +137,12 @@ class PaymentController extends PaymentController_parent
      * Assign  note payment values to view data. Loads user note payment
      * if available and assigns payment data to $this->_aDynValue
      */
-    protected function _assignDebitNoteParams()
+    protected function _card2user($cardId)
     {
         // #701A
         $oUserPayment = oxNew(\OxidEsales\Eshop\Application\Model\UserPayment::class);
         //such info available ?
-        if ($oUserPayment->getPaymentByPaymentType($this->getUser(), 'oxiddebitnote')) {
+        if ($oUserPayment->getPaymentByPaymentType($this->getUser(), 'weeopenpaycredit')) {
             $sUserPaymentField = 'oxuserpayments__oxvalue';
             $aAddPaymentData = \OxidEsales\Eshop\Core\Registry::getUtils()->assignValuesFromText($oUserPayment->$sUserPaymentField->value);
 
