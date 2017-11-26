@@ -37,7 +37,7 @@ class PaymentController extends PaymentController_parent
     protected $_oCustomer = null;
 
     /**
-    */
+     */
     public function validatePayment()
     {
         $session = $this->getSession();
@@ -67,11 +67,36 @@ class PaymentController extends PaymentController_parent
      *
      * @return object
      */
-    public function addOpenPayCard($customer)
+    public function addOpenPayCard()
     {
-        $aCardData=   \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'dynvalue');
+        $aCardData=   \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('dynvalue');
 
-        return $this->_oCustomer->cards->add($aCardData);
+        try{
+            $customer = $this->_oCustomer;
+            $card = $customer->cards->add($aCardData);
+        } catch (OpenpayApiTransactionError $e) {
+            error_log('ERROR on the transaction: ' . $e->getMessage() .
+                ' [error code: ' . $e->getErrorCode() .
+                ', error category: ' . $e->getCategory() .
+                ', HTTP code: '. $e->getHttpCode() .
+                ', request ID: ' . $e->getRequestId() . ']', 0);
+
+        } catch (OpenpayApiRequestError $e) {
+            error_log('ERROR on the request: ' . $e->getMessage(), 0);
+
+        } catch (OpenpayApiConnectionError $e) {
+            error_log('ERROR while connecting to the API: ' . $e->getMessage(), 0);
+
+        } catch (OpenpayApiAuthError $e) {
+            error_log('ERROR on the authentication: ' . $e->getMessage(), 0);
+
+        } catch (OpenpayApiError $e) {
+            error_log('ERROR on the API: ' . $e->getMessage(), 0);
+
+        } catch (Exception $e) {
+            error_log('Error on the script: ' . $e->getMessage(), 0);
+        }
+        return $card;
 
     }
 
@@ -80,9 +105,10 @@ class PaymentController extends PaymentController_parent
      *
      * @return object
      */
-    public function getOpenPayCards($count = 1)
+    public function getOpenPayCards($count = 10)
     {
         $aCardData=   \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'dynvalue');
+
 
         $cardNr = $aCardData["card_number"];
         $sCardNumber = substr_replace($cardNr,  str_repeat("X", 6), 6, 6);
@@ -92,11 +118,14 @@ class PaymentController extends PaymentController_parent
 
         $cardList = $this->_oCustomer->cards->getList($findDataRequest);
 
-        foreach ($cardList as $card) {
-            if($sCardNumber == $card->card_number ){
-                return $card;
+        if($cardList){
+            foreach ($cardList as $card) {
+                if($sCardNumber == $card->card_number ){
+                    return $card;
+                }
             }
         }
+
 
         return $this->addOpenPayCard();
 
@@ -168,7 +197,7 @@ class PaymentController extends PaymentController_parent
         $findDataRequest = array(
             'creation[gte]' => '2017-01-31',
             'limit' => $count,
-           );
+        );
 
         $customerList = $oOpenpay->customers->getList($findDataRequest);
 
