@@ -45,7 +45,7 @@ class PaymentController extends PaymentController_parent
         $sTokenId =     \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'token_id');
         $sDeviceId =     \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'device_session_id');
 
-        $this->deleteOpenPayCustomer();
+        $this->getOpenPayCustomer();
         $this->_oCustomer = $this->getOpenPayCustomer();
 
         $card = $this->getOpenPayCards();
