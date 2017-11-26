@@ -34,46 +34,24 @@ class PaymentController extends PaymentController_parent
     /** @var null \OxidEsales\OpenPay\Module\Core\Config */
     protected $openPayConfig = null;
 
+    protected $_oCustomer = null;
+
     /**
     */
     public function validatePayment()
     {
-        $oOpenpay = $this->initOpenPay();
-        $oUser = $this->getUser();
+        $session = $this->getSession();
 
-        $aDynvalue =   \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'dynvalue');
         $sTokenId =     \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'token_id');
         $sDeviceId =     \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'device_session_id');
 
-        $sUserCountryId = $oUser->oxuser__oxcountryid->getRawValue();
-        $sUserState = $oUser->oxuser__oxstateid->getRawValue();
+        $this->deleteOpenPayCustomer();
+        $this->_oCustomer = $this->getOpenPayCustomer();
 
-        $aCustomerData = [
-              //'external_id' => $oUser->oxuser__oxid->getRawValue(),
-                'name' => $oUser->oxuser__oxfname->getRawValue(),
-                'last_name' => $oUser->oxuser__oxlname->getRawValue(),
-                'email' => $oUser->oxuser__oxusername->getRawValue(),
-                'phone_number' => $oUser->oxuser__oxfon->getRawValue(),
-                'address' => [
-                    'line1' =>  $oUser->oxuser__oxstreet->getRawValue(),
-                    'line2' =>  $oUser->oxuser__oxstreetnr->getRawValue(),
-                    'line3' =>  $oUser->oxuser__oxaddinfo->getRawValue(),
-                    'postal_code' =>  $oUser->oxuser__oxzip->getRawValue(),
-                    'state' =>  $sUserState ?: 'DF',
-                    'city' =>  $oUser->oxuser__oxcity->getRawValue(),
-                    'country_code' =>  $this->getUserCountryCode($sUserCountryId),
-                ]
-            ];
-
-        $customer = $oOpenpay->customers->add($aCustomerData);
-        $card = $customer->cards->add($aDynvalue);
-        //$this->_card2user($card);
+        $card = $this->getOpenPayCards();
 
         $paymentId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('paymentid');
-        $session = $this->getSession();
-        $basket = $session->getBasket();
-
-        if ($paymentId === 'openpaycredit' && !$this->isConfirmedByPayPal($basket)) {
+        if ($paymentId === 'openpaycredit') {
             $session->setVariable('paymentid', 'openpaycredit');
             $session->setVariable('tokenid', $sTokenId);
             $session->setVariable('deviceid', $sDeviceId);
@@ -82,6 +60,123 @@ class PaymentController extends PaymentController_parent
 
         return parent::validatePayment();
 
+    }
+
+    /**
+     * Adds Card.
+     *
+     * @return object
+     */
+    public function addOpenPayCard($customer)
+    {
+        $aCardData=   \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'dynvalue');
+
+        return $this->_oCustomer->cards->add($aCardData);
+
+    }
+
+    /**
+     * Get Cards.
+     *
+     * @return object
+     */
+    public function getOpenPayCards($count = 1)
+    {
+        $aCardData=   \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'dynvalue');
+
+        $cardNr = $aCardData["card_number"];
+        $sCardNumber = substr_replace($cardNr,  str_repeat("X", 6), 6, 6);
+        $findDataRequest = array(
+            'limit' => $count,
+        );
+
+        $cardList = $this->_oCustomer->cards->getList($findDataRequest);
+
+        foreach ($cardList as $card) {
+            if($sCardNumber == $card->card_number ){
+                return $card;
+            }
+        }
+
+        return $this->addOpenPayCard();
+
+    }
+
+    /**
+     * Returns Customer  Id.
+     *
+     * @return object
+     */
+    public function getOpenPayCustomer()
+    {
+        $oOpenpay = $this->initOpenPay();
+        $oUser = $this->getUser();
+
+        $findCustomer = array(
+            'external_id' => $oUser->oxuser__oxid->getRawValue(),
+        );
+
+        $customer = $oOpenpay->customers->getList($findCustomer);
+        if($customer){
+            return $customer[0];
+        }
+
+        return $this->addOpenPayCustomer();
+    }
+    /**
+     * Adds Customer.
+     *
+     * @return object
+     */
+    public function addOpenPayCustomer()
+    {
+        $oOpenpay = $this->initOpenPay();
+        $oUser = $this->getUser();
+
+        $sUserCountryId = $oUser->oxuser__oxcountryid->getRawValue();
+        $sUserState = $oUser->oxuser__oxstateid->getRawValue();
+
+        $aCustomerData = [
+            'external_id' => $oUser->oxuser__oxid->getRawValue(),
+            'name' => $oUser->oxuser__oxfname->getRawValue(),
+            'last_name' => $oUser->oxuser__oxlname->getRawValue(),
+            'email' => $oUser->oxuser__oxusername->getRawValue(),
+            'phone_number' => $oUser->oxuser__oxfon->getRawValue(),
+            'address' => [
+                'line1' =>  $oUser->oxuser__oxstreet->getRawValue(),
+                'line2' =>  $oUser->oxuser__oxstreetnr->getRawValue(),
+                'line3' =>  $oUser->oxuser__oxaddinfo->getRawValue(),
+                'postal_code' =>  $oUser->oxuser__oxzip->getRawValue(),
+                'state' =>  $sUserState ?: 'DF',
+                'city' =>  $oUser->oxuser__oxcity->getRawValue(),
+                'country_code' =>  $this->getUserCountryCode($sUserCountryId),
+            ]
+        ];
+
+        return $oOpenpay->customers->add($aCustomerData);
+    }
+
+    /**
+     * Adds Customer.
+     *
+     * @return object
+     */
+    public function deleteOpenPayCustomer($count = 1)
+    {
+        $oOpenpay = $this->initOpenPay();
+
+        $findDataRequest = array(
+            'creation[gte]' => '2017-01-31',
+            'limit' => $count,
+           );
+
+        $customerList = $oOpenpay->customers->getList($findDataRequest);
+
+        foreach ($customerList as $customer){
+            $customer = $oOpenpay->customers->get($customer->id);
+            $customer->delete();
+        }
+        return;
     }
 
     /**
@@ -133,27 +228,4 @@ class PaymentController extends PaymentController_parent
         return $oCountry->oxcountry__oxisoalpha2->value;
     }
 
-    /**
-     * Assign  note payment values to view data. Loads user note payment
-     * if available and assigns payment data to $this->_aDynValue
-     */
-    protected function _card2user($cardId)
-    {
-        // #701A
-        $oUserPayment = oxNew(\OxidEsales\Eshop\Application\Model\UserPayment::class);
-        //such info available ?
-        if ($oUserPayment->getPaymentByPaymentType($this->getUser(), 'weeopenpaycredit')) {
-            $sUserPaymentField = 'oxuserpayments__oxvalue';
-            $aAddPaymentData = \OxidEsales\Eshop\Core\Registry::getUtils()->assignValuesFromText($oUserPayment->$sUserPaymentField->value);
-
-            //checking if some of values is allready set in session - leave it
-            foreach ($aAddPaymentData as $oData) {
-                if (!isset($this->_aDynValue[$oData->name]) ||
-                    (isset($this->_aDynValue[$oData->name]) && !$this->_aDynValue[$oData->name])
-                ) {
-                    $this->_aDynValue[$oData->name] = $oData->value;
-                }
-            }
-        }
-    }
 }

@@ -46,6 +46,7 @@ $aModule = [
         \OxidEsales\Eshop\Application\Controller\OrderController::class       => \OxidEsales\OpenPayModule\Controller\OrderController::class,
 
         \OxidEsales\Eshop\Application\Model\Order::class                      => \OxidEsales\OpenPayModule\Model\Order::class,
+        \OxidEsales\Eshop\Application\Model\PaymentGateway::class             => \OxidEsales\OpenPayModule\Model\PaymentGateway::class,
     ],
     'controllers'       => [
 

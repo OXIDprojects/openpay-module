@@ -20,97 +20,76 @@
  * @version   Weetsi OpenPay
  */
 
-namespace OxidEsales\OpenPayModule\Controller;
+namespace OxidEsales\OpenPayModule\Model;
 
 use Openpay;
 
 /**
- * Order class wrapper for PayPal module
+ * OpenPay PaymentGateway class
+ *  Checks and sets payment method data, executes payment.
  *
- * @mixin \OxidEsales\Eshop\Application\Controller\OrderController
+ * @mixin \OxidEsales\Eshop\Application\Model\Order
  */
-class OrderController extends OrderController_parent
+class PaymentGateway extends PaymentGateway_parent
 {
-    /** @var null \OxidEsales\OpenPay\Module\Core\Config */
-    protected $openPayConfig = null;
-
     /**
-     * Returns next order step. If ordering was sucessfull - returns string "thankyou" (possible
-     * additional parameters), otherwise - returns string "payment" with additional
-     * error parameters.
+     * Overrides standard oxid finalizeOrder method if the used payment method belongs to OpenPay.
+     * Return parent's return if payment method is no OpenPay method
      *
-     * @param integer $iSuccess status code
+     * Executes payment, returns true on success.
      *
-     * @return  string  $sNextStep  partial parameter url for next step
+     * @param double $dAmount Goods amount
+     * @param object &$oOrder User ordering object
+     *
+     * @extend executePayment
+     * @return bool
      */
-    protected function _getNextStep($iSuccess)
+    public function executePayments( $dAmount, &$oOrder )
     {
-        $nextStep = parent::_getNextStep($iSuccess);
+        $success = parent::executePayment($dAmount, $oOrder);
+        $paymentId = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('paymentid');
 
-        $this->doOpenPayCharge();
+        if ($paymentId == 'openpaycredit') {
+          //return $this->doOpenPayCharge($dAmount, $oOrder);
+        }
 
-        $this->_markOrderPaid();
-
-        return $nextStep;
+        return $success;
     }
 
     /**
      * @return array
      */
-    public function doOpenPayCharge()
+    public function doOpenPayCharges($dAmount, $oOrder)
     {
         $oOpenpay = $this->initOpenPay();
         $sCustomer =  $this->getSession()->getVariable('customerid');
+        $orderId = $oOrder->oxorder__oxid->value;
 
-        $oOrder= $this->getOrder();
+        if (!$oOrder->oxorder__oxordernr->value) {
+            $oOrderModel = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+            $oOrderModel->load($orderId);
+
+            $oOrderModel->_setNumber();
+        }
 
         $aChargeData = array(
             'source_id' => $this->getSession()->getVariable('tokenid'),
             'method' => 'card',
-            'amount' => $oOrder->oxorder__oxtotalnetsum->value,
+            'amount' => $dAmount,
             'description' => $oOrder->oxorder__oxid->value,
-            'order_id' => $oOrder->oxorder__oxordernr->value,
+            'capture' => false,
+            'order_id' => $this->oxorder__oxordernr->value,
             'device_session_id' => $this->getSession()->getVariable('deviceid'),
         );
 
+
         $customer = $oOpenpay->customers->get($sCustomer);
-        $customer->charges->create($aChargeData);
-    }
+        $charge = $customer->charges->create($aChargeData);
 
+        $session = $this->getSession();
+        $session->setVariable('chargeid', $charge->id);
 
-
-    /**
-     * Updates order transaction status. Faster than saving whole object
-     *
-     * @param string $sStatus order transaction status
-     */
-    protected function _markOrderPaid()
-    {
-        $utilsDate = \OxidEsales\Eshop\Core\Registry::getUtilsDate();
-        $date = date('Y-m-d H:i:s', $utilsDate->getTime());
-
-        $order = $this->getOrder();
-        $orderId = $order->getId();
-        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
-        $sQ = 'update oxorder set oxpaid=' . $oDb->quote($date) . ' where oxid=' . $oDb->quote($orderId);
-        $oDb->execute($sQ);
-
-        //updating order object
-        $order->oxorder__oxid = new \OxidEsales\Eshop\Core\Field($date, \OxidEsales\Eshop\Core\Field::T_RAW);
-
-    }
-
-    /**
-     * Returns current order object
-     *
-     * @return \OxidEsales\Eshop\Application\Model\Order
-     */
-    protected function getOrder()
-    {
-        $order = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
-        $order->load($this->getSession()->getVariable('sess_challenge'));
-
-        return $order;
+        return true;
     }
 
     /**
@@ -147,8 +126,8 @@ class OrderController extends OrderController_parent
         $sPrivateApiKey = $this->getOpenPayConfig()->getOpenPayPrivateKey();
 
         $openpay = Openpay::getInstance($sOpenPayId, $sPrivateApiKey);
+
         return $openpay;
 
     }
-
 }

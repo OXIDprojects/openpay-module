@@ -20,7 +20,7 @@
         <div class="form-group">
             <label class="req control-label col-lg-3">[{oxmultilang ident="NUMBER"}]</label>
             <div class="col-lg-6">
-                <input x-autocompletetype="cc-number" type="text" class="form-control js-oxValidate js-oxValidate_notEmpty" size="20" maxlength="64" name="dynvalue[card_number]" value="4111111111111111" data-openpay-card="card_number" required="required">
+                <input x-autocompletetype="cc-number" type="text" class="form-control js-oxValidate js-oxValidate_notEmpty" size="20" maxlength="64" name="dynvalue[card_number]" value="" data-openpay-card="card_number" required="required">
             </div>
         </div>
 
@@ -62,8 +62,8 @@
 
         <div class="form-group">
             <label class="req control-label col-lg-3">[{oxmultilang ident="CARD_SECURITY_CODE"}]</label>
-            <div class="col-lg-4">
-                <input type="text" class="form-control js-oxValidate js-oxValidate_notEmpty" size="20" maxlength="64" name="dynvalue[cvv2]" value="[{$dynvalue.cvv2}]" data-openpay-card="cvv2" required="required">
+            <div class="col-lg-3">
+                <input type="text" class="form-control js-oxValidate js-oxValidate_notEmpty" size="20" maxlength="64" name="dynvalue[cvv2]" value="" data-openpay-card="cvv2" required="required">
                 <span class="help-block">[{oxmultilang ident="CARD_SECURITY_CODE_DESCRIPTION"}]</span>
             </div>
         </div>

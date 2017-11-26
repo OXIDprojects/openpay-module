@@ -22,6 +22,8 @@
 
 namespace OxidEsales\OpenPayModule\Model;
 
+use Openpay;
+
 /**
  * OpenPay oxOrder class
  *
@@ -30,7 +32,41 @@ namespace OxidEsales\OpenPayModule\Model;
 class Order extends Order_parent
 {
     /**
-     * Update order oxpaid to current time.
+     * Returns OpenPay config.
+     *
+     * @return \OxidEsales\OpenPayModule\Core\Config
      */
+    protected function getOpenPayConfig()
+    {
+        if (is_null($this->openPayConfig)) {
+            $this->openPayConfig = oxNew(\OxidEsales\OpenPayModule\Core\Config::class);
+        }
+        return $this->openPayConfig;
+    }
 
+    /**
+     * Returns current OpenPay Id.
+     *
+     * @return string
+     */
+    public function getOpenPayId()
+    {
+        return $this->getOpenPayConfig()->getOpenPayApiId();
+    }
+
+    /**
+     * Returns OpenPay Object.
+     *
+     * @return object
+     */
+    public function initOpenPay()
+    {
+        $sOpenPayId = $this->getOpenPayConfig()->getOpenPayApiId();
+        $sPrivateApiKey = $this->getOpenPayConfig()->getOpenPayPrivateKey();
+
+        $openpay = Openpay::getInstance($sOpenPayId, $sPrivateApiKey);
+
+        return $openpay;
+
+    }
 }
