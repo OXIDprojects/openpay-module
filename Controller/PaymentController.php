@@ -32,70 +32,72 @@ use Openpay;
 class PaymentController extends PaymentController_parent
 {
     /** @var null \OxidEsales\OpenPay\Module\Core\Config */
-    protected $openPayConfig = null;
+    protected $openPay = null;
 
-    protected $_oCustomer = null;
+    private $_sSaveError = null;
+
+
+    /**
+     * OpenPay constructor
+     */
+    public function init()
+    {
+        parent::init();
+
+        $sOpenPayId = $this->getOpenPayConfig()->getOpenPayApiId();
+        $sPrivateApiKey = $this->getOpenPayConfig()->getOpenPayPrivateKey();
+
+        $this->openPay = Openpay::getInstance($sOpenPayId, $sPrivateApiKey);
+    }
 
     /**
      */
     public function validatePayment()
     {
-        $session = $this->getSession();
 
-        $sTokenId =     \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'token_id');
-        $sDeviceId =     \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'device_session_id');
+            $session = $this->getSession();
 
-        $this->getOpenPayCustomer();
-        $this->_oCustomer = $this->getOpenPayCustomer();
+            $sTokenId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('token_id');
+            $sDeviceId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('device_session_id');
 
-        $card = $this->getOpenPayCards();
+            $this->getOpenPayCustomer();
+            $oCustomer = $this->getOpenPayCustomer();
 
-        $paymentId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('paymentid');
-        if ($paymentId === 'openpaycredit') {
-            $session->setVariable('paymentid', 'openpaycredit');
-            $session->setVariable('tokenid', $sTokenId);
-            $session->setVariable('deviceid', $sDeviceId);
-            $session->setVariable('customerid', $card->customer_id);
-        }
+            if (!$oCustomer) {
+                $oCustomer = $this->addOpenPayCustomer();
+            }
 
-        return parent::validatePayment();
+            $card = $this->getOpenPayCards($oCustomer);
 
+            if (!$card) {
+                $card = $this->addOpenPayCard($oCustomer);
+            }
+
+            $paymentId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('paymentid');
+
+            if ($paymentId === 'openpaycredit') {
+                $session->setVariable('paymentid', 'openpaycredit');
+                $session->setVariable('tokenid', $sTokenId);
+                $session->setVariable('deviceid', $sDeviceId);
+                $session->setVariable('customerid', $card->customer_id);
+            }
+
+            return parent::validatePayment();
     }
+
 
     /**
      * Adds Card.
      *
      * @return object
      */
-    public function addOpenPayCard()
+    public function addOpenPayCard($oCustomer)
     {
         $aCardData=   \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('dynvalue');
 
-        try{
-            $customer = $this->_oCustomer;
-            $card = $customer->cards->add($aCardData);
-        } catch (OpenpayApiTransactionError $e) {
-            error_log('ERROR on the transaction: ' . $e->getMessage() .
-                ' [error code: ' . $e->getErrorCode() .
-                ', error category: ' . $e->getCategory() .
-                ', HTTP code: '. $e->getHttpCode() .
-                ', request ID: ' . $e->getRequestId() . ']', 0);
+        $customer = $oCustomer;
+        $card = $customer->cards->add($aCardData);
 
-        } catch (OpenpayApiRequestError $e) {
-            error_log('ERROR on the request: ' . $e->getMessage(), 0);
-
-        } catch (OpenpayApiConnectionError $e) {
-            error_log('ERROR while connecting to the API: ' . $e->getMessage(), 0);
-
-        } catch (OpenpayApiAuthError $e) {
-            error_log('ERROR on the authentication: ' . $e->getMessage(), 0);
-
-        } catch (OpenpayApiError $e) {
-            error_log('ERROR on the API: ' . $e->getMessage(), 0);
-
-        } catch (Exception $e) {
-            error_log('Error on the script: ' . $e->getMessage(), 0);
-        }
         return $card;
 
     }
@@ -105,29 +107,29 @@ class PaymentController extends PaymentController_parent
      *
      * @return object
      */
-    public function getOpenPayCards($count = 10)
+    public function getOpenPayCards($oCustomer)
     {
         $aCardData=   \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter( 'dynvalue');
 
 
         $cardNr = $aCardData["card_number"];
         $sCardNumber = substr_replace($cardNr,  str_repeat("X", 6), 6, 6);
-        $findDataRequest = array(
-            'limit' => $count,
-        );
 
-        $cardList = $this->_oCustomer->cards->getList($findDataRequest);
+        $findData = array(
+            'offset' => 0,
+            'limit' => 5);
+
+        $cardList = $oCustomer->cards->getList($findData);
 
         if($cardList){
             foreach ($cardList as $card) {
-                if($sCardNumber == $card->card_number ){
+                if($sCardNumber == $card->card_number){
                     return $card;
                 }
             }
         }
 
-
-        return $this->addOpenPayCard();
+        return false;
 
     }
 
@@ -138,7 +140,7 @@ class PaymentController extends PaymentController_parent
      */
     public function getOpenPayCustomer()
     {
-        $oOpenpay = $this->initOpenPay();
+        $oOpenpay = $this->openPay;
         $oUser = $this->getUser();
 
         $findCustomer = array(
@@ -146,11 +148,12 @@ class PaymentController extends PaymentController_parent
         );
 
         $customer = $oOpenpay->customers->getList($findCustomer);
+
         if($customer){
             return $customer[0];
         }
 
-        return $this->addOpenPayCustomer();
+        return false;
     }
     /**
      * Adds Customer.
@@ -159,7 +162,7 @@ class PaymentController extends PaymentController_parent
      */
     public function addOpenPayCustomer()
     {
-        $oOpenpay = $this->initOpenPay();
+        $oOpenpay = $this->openPay;
         $oUser = $this->getUser();
 
         $sUserCountryId = $oUser->oxuser__oxcountryid->getRawValue();
@@ -192,7 +195,7 @@ class PaymentController extends PaymentController_parent
      */
     public function deleteOpenPayCustomer($count = 1)
     {
-        $oOpenpay = $this->initOpenPay();
+        $oOpenpay = $this->openPay;
 
         $findDataRequest = array(
             'creation[gte]' => '2017-01-31',
@@ -208,20 +211,6 @@ class PaymentController extends PaymentController_parent
         return;
     }
 
-    /**
-     * Returns OpenPay Object.
-     *
-     * @return object
-     */
-    public function initOpenPay()
-    {
-        $sOpenPayId = $this->getOpenPayConfig()->getOpenPayApiId();
-        $sPrivateApiKey = $this->getOpenPayConfig()->getOpenPayPrivateKey();
-
-        $openpay = Openpay::getInstance($sOpenPayId, $sPrivateApiKey);
-        return $openpay;
-
-    }
 
     /**
      * Returns OpenPay config.

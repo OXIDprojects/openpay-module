@@ -45,13 +45,12 @@ class OrderController extends OrderController_parent
      */
     protected function _getNextStep($iSuccess)
     {
-        $nextStep = parent::_getNextStep($iSuccess);
 
         $this->doOpenPayCharge();
 
         $this->_markOrderPaid();
 
-        return $nextStep;
+        return parent::_getNextStep($iSuccess);
     }
 
     /**
@@ -74,7 +73,7 @@ class OrderController extends OrderController_parent
         );
 
         $customer = $oOpenpay->customers->get($sCustomer);
-        $customer->charges->create($aChargeData);
+        return $customer->charges->create($aChargeData);
     }
 
 
@@ -96,7 +95,7 @@ class OrderController extends OrderController_parent
         $oDb->execute($sQ);
 
         //updating order object
-        $order->oxorder__oxid = new \OxidEsales\Eshop\Core\Field($date, \OxidEsales\Eshop\Core\Field::T_RAW);
+        return $order->oxorder__oxid = new \OxidEsales\Eshop\Core\Field($date, \OxidEsales\Eshop\Core\Field::T_RAW);
 
     }
 
